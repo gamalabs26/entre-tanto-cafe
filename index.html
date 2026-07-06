@@ -120,40 +120,35 @@ h2{font-size:clamp(2.1rem,5.2vw,4rem)}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:clamp(4.5rem,11vh,9rem) clamp(1.1rem,4vw,2.6rem)}
 .sec-head{max-width:60ch}.sec-head h2{margin:.7rem 0}
 
-/* ===== RITUAL 3D ===== */
+/* ===== RITUAL — cámara inmersiva full-bleed ===== */
 .ritual{background:var(--gs-espresso)}
-.ritual-stage{position:relative;height:100svh;overflow:hidden;display:flex;align-items:center}
-.ritual-bg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;filter:blur(26px) brightness(.32) saturate(1.1);transform:scale(1.15)}
-.ritual-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(80% 80% at 35% 50%,transparent,rgba(20,12,8,.7))}
-.ritual-canvas{position:absolute;inset:0;z-index:1;width:100%;height:100%}
-/* Stack de fotos reales del cliente (scroll-scrubbed) */
-.drink-stack{position:absolute;z-index:1;top:50%;left:clamp(1.5rem,6vw,6rem);transform:translateY(-50%);width:min(44vw,560px);aspect-ratio:4/5;border-radius:22px;overflow:hidden;box-shadow:0 45px 100px -35px rgba(0,0,0,.85),0 0 0 1px rgba(245,239,227,.06)}
-.drink-stack::after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(180deg,rgba(20,12,8,.25),transparent 30%,transparent 65%,rgba(20,12,8,.55));border-radius:inherit}
-.drink-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform,opacity;transform-origin:60% 45%;backface-visibility:hidden}
-.drink-tag{position:absolute;left:1.1rem;bottom:1rem;z-index:6;font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gs-cream);background:rgba(20,12,8,.5);border:1px solid rgba(245,239,227,.14);padding:.5rem .9rem;border-radius:100px;backdrop-filter:blur(6px)}
-body:not(.immersive) .drink-stack{display:none}
-.ritual-content{position:relative;z-index:2;width:100%;max-width:var(--maxw);margin:0 auto;padding:0 clamp(1.1rem,4vw,2.6rem);display:grid;grid-template-columns:1fr 1fr;pointer-events:none}
-.ritual-steps{grid-column:2;position:relative;min-height:60vh;display:flex;align-items:center}
-.rstep{position:absolute;opacity:0;transform:translateY(30px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.ritual-stage{position:relative;height:100svh;overflow:hidden}
+.chamber-bg{position:absolute;inset:-8%;z-index:0;background-size:cover;background-position:center;filter:blur(30px) brightness(.34) saturate(1.05);transform:scale(1.1);will-change:transform}
+.chamber-photos{position:absolute;inset:-4%;z-index:1;will-change:transform}
+.chamber-photo{position:absolute;inset:0;background-size:cover;background-position:center 42%;opacity:0;will-change:opacity,transform;transform-origin:center;backface-visibility:hidden}
+.chamber-steam{position:absolute;inset:0;z-index:2;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
+.chamber-scrim{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(180deg,rgba(18,11,7,.55) 0%,transparent 24%,transparent 42%,rgba(18,11,7,.86) 100%),radial-gradient(75% 65% at 28% 62%,transparent,rgba(18,11,7,.5))}
+.chamber-vignette{position:absolute;inset:0;z-index:4;pointer-events:none;box-shadow:inset 0 0 220px 50px rgba(8,5,3,.8)}
+.chamber-grain{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.06;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+.chamber-caption{position:absolute;z-index:6;left:clamp(1.2rem,5vw,4.5rem);right:clamp(1.2rem,5vw,4.5rem);bottom:clamp(2.2rem,7vh,5rem);pointer-events:none}
+.chamber-caption .kicker{color:var(--gs-amber)}
+.chamber-caption .ritual-steps{position:relative;margin-top:1rem;min-height:clamp(9rem,22vh,13rem)}
+.rstep{position:absolute;left:0;bottom:0;max-width:min(92vw,660px);opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .rstep.active{opacity:1;transform:none}
-.rstep .num{font-family:var(--gs-font-display);color:var(--gs-amber);font-size:1rem;letter-spacing:.1em;display:block;margin-bottom:.6rem}
-.rstep h3{font-size:clamp(1.8rem,3.4vw,2.8rem);margin-bottom:.8rem}
-.rstep p{opacity:.85;font-weight:300;max-width:40ch}
-.ritual-kicker{position:absolute;top:clamp(5rem,12vh,8rem);left:0;right:0;z-index:2;text-align:center;pointer-events:none}
-.ritual-kicker h2{margin-top:.5rem;font-size:clamp(1.8rem,3.6vw,2.8rem)}
-.ritual-progress{position:absolute;left:clamp(1.1rem,4vw,2.6rem);top:50%;transform:translateY(-50%);z-index:3;display:flex;flex-direction:column;gap:.7rem}
-.ritual-progress i{width:8px;height:8px;border-radius:50%;background:rgba(245,239,227,.25);transition:.4s var(--ease)}
-.ritual-progress i.on{background:var(--gs-amber);transform:scale(1.4)}
+.rstep .num{font-family:var(--gs-font-display);color:var(--gs-amber);font-size:.95rem;letter-spacing:.14em;display:block;margin-bottom:.5rem}
+.rstep h3{font-size:clamp(2rem,5vw,3.7rem);line-height:1.02;margin-bottom:.7rem;text-shadow:0 2px 30px rgba(0,0,0,.5)}
+.rstep p{color:var(--gs-cream);opacity:.84;font-weight:300;max-width:46ch;text-shadow:0 1px 16px rgba(0,0,0,.5)}
+.ritual-progress{position:absolute;right:clamp(1.1rem,4vw,2.6rem);top:50%;transform:translateY(-50%);z-index:6;display:flex;flex-direction:column;gap:.7rem}
+.ritual-progress i{width:8px;height:8px;border-radius:50%;background:rgba(245,239,227,.28);transition:.4s var(--ease)}
+.ritual-progress i.on{background:var(--gs-amber);transform:scale(1.5)}
 .ritual-fallback{position:absolute;inset:0;z-index:1;display:none}
 .ritual-fallback img{width:100%;height:100%;object-fit:cover}
-body:not(.immersive) .ritual-stage{height:auto;min-height:auto;display:block}
-body:not(.immersive) .ritual-canvas{display:none}
-body:not(.immersive) .ritual-fallback{display:block;position:relative;height:56vh}
-body:not(.immersive) .ritual-content{grid-template-columns:1fr;padding-top:3rem;padding-bottom:4rem}
-body:not(.immersive) .ritual-steps{grid-column:1;flex-direction:column;gap:2.6rem;min-height:auto}
-body:not(.immersive) .rstep{position:relative;opacity:1;transform:none}
-body:not(.immersive) .ritual-progress,body:not(.immersive) .ritual-kicker{display:none}
-@media(max-width:860px){.ritual-content{grid-template-columns:1fr}.ritual-steps{grid-column:1}}
+body:not(.immersive) .ritual-stage{height:auto;overflow:visible}
+body:not(.immersive) .chamber-bg,body:not(.immersive) .chamber-photos,body:not(.immersive) .chamber-steam,body:not(.immersive) .chamber-scrim,body:not(.immersive) .chamber-vignette,body:not(.immersive) .chamber-grain,body:not(.immersive) .ritual-progress{display:none}
+body:not(.immersive) .ritual-fallback{display:block;position:relative;height:52vh}
+body:not(.immersive) .chamber-caption{position:relative;inset:auto;left:auto;right:auto;bottom:auto;padding:2.5rem clamp(1.1rem,4vw,2.6rem) 3.5rem}
+body:not(.immersive) .chamber-caption .ritual-steps{min-height:auto;display:flex;flex-direction:column;gap:2.4rem}
+body:not(.immersive) .rstep{position:relative;opacity:1;transform:none;bottom:auto}
 
 /* MARQUEE */
 .marquee{overflow:hidden;border-top:1px solid rgba(245,239,227,.12);border-bottom:1px solid rgba(245,239,227,.12);padding:1.4rem 0;background:var(--gs-espresso-2)}
@@ -298,32 +293,35 @@ footer .fnav a{opacity:.75}footer .fnav a:hover{color:var(--gs-amber)}
 <!-- RITUAL 3D -->
 <section class="ritual" id="especialidad">
   <div class="ritual-stage" id="ritualStage">
-    <div class="ritual-bg" id="ritualBg" style="background-image:url('img/foto-10.webp')"></div>
-    <div class="drink-stack" id="drinkStack">
-      <img class="drink-photo" src="img/foto-04.webp" alt="Pour over sirviéndose, café negro de especialidad">
-      <img class="drink-photo" src="img/foto-06.webp" alt="Latte con arte latte en cerámica cálida">
-      <img class="drink-photo" src="img/foto-07.webp" alt="Matcha ceremonial de autor">
-      <span class="drink-tag" id="drinkTag">Pour-over · negro</span>
+    <div class="chamber-bg" id="chamberBg" style="background-image:url('img/foto-10.webp')"></div>
+    <div class="chamber-photos" id="chamberPhotos">
+      <div class="chamber-photo" style="background-image:url('img/foto-04.webp')"></div>
+      <div class="chamber-photo" style="background-image:url('img/foto-06.webp')"></div>
+      <div class="chamber-photo" style="background-image:url('img/foto-07.webp')"></div>
     </div>
+    <canvas class="chamber-steam" id="chamberSteam"></canvas>
+    <div class="chamber-scrim"></div>
+    <div class="chamber-vignette"></div>
+    <div class="chamber-grain"></div>
     <div class="ritual-fallback"><img data-gs-img src="img/foto-04.webp" alt="Pour over sirviéndose, café de especialidad"></div>
     <div class="ritual-progress" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
-    <div class="ritual-kicker"><span class="kicker">El ritual</span><h2>Tu café, mientras bajas.</h2></div>
-    <div class="ritual-content">
+    <div class="chamber-caption">
+      <span class="kicker">El ritual</span>
       <div class="ritual-steps">
         <div class="rstep active" data-beat="0">
-          <span class="num">01 — Método</span>
+          <span class="num">01 — Método · Pour-over</span>
           <h3>Negro, extraído despacio</h3>
           <p>Chemex, V60, Aeropress o prensa. Molemos al momento y controlamos el agua para que el grano de especialidad hable: dulzor, cuerpo y una acidez limpia.</p>
         </div>
         <div class="rstep" data-beat="1">
-          <span class="num">02 — Con leche</span>
+          <span class="num">02 — Con leche · Latte</span>
           <h3>Latte de grano tostado en casa</h3>
-          <p>Leche sedosa sobre espresso de tueste propio, con arte en cerámica cálida. Cappuccino tradicional para quedarse un buen rato.</p>
+          <p>Leche sedosa sobre espresso de tueste propio, con arte en cerámica cálida. Para quedarse un buen rato.</p>
         </div>
         <div class="rstep" data-beat="2">
-          <span class="num">03 — De autor</span>
+          <span class="num">03 — De autor · Matcha</span>
           <h3>Matcha, espresso tónic & cold brew</h3>
-          <p>Matcha ceremonial, café verde, o el espresso tónic coronado con toronja deshidratada. Frío, cítrico, distinto. Tú decides tu momento.</p>
+          <p>Matcha ceremonial, café verde, o el espresso tónic coronado con toronja deshidratada. Frío, cítrico, distinto.</p>
         </div>
       </div>
     </div>

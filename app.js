@@ -78,44 +78,68 @@ if(IMMERSIVE){
 }
 
 function initRitual(){
-  const photos=[...document.querySelectorAll('.drink-photo')];
-  const tag=document.getElementById('drinkTag');
-  const tags=['Pour-over · negro','Latte · leche sedosa','Matcha · de autor'];
+  const photos=[...document.querySelectorAll('.chamber-photo')];
+  const bg=document.getElementById('chamberBg');
+  const wrap=document.getElementById('chamberPhotos');
+  const cv=document.getElementById('chamberSteam');
+  const ctx=cv.getContext('2d');
   const dots=document.querySelectorAll('.ritual-progress i');
   const steps=document.querySelectorAll('.rstep');
-  const N=photos.length;
-  const seg=1/(N-1);
-  const target={progress:0};let cur=0,lastBeat=-1;
+  const N=photos.length, seg=1/(N-1);
+  const target={progress:0}; let cur=0,lastBeat=-1,t=0,W=0,H=0,DPR=Math.min(devicePixelRatio||1,2);
 
-  function setBeat(p){const b=Math.max(0,Math.min(N-1,Math.floor(p*N)));if(b!==lastBeat){lastBeat=b;steps.forEach((s,i)=>s.classList.toggle('active',i===b));dots.forEach((d,i)=>d.classList.toggle('on',i===b));if(tag)tag.textContent=tags[b];}}
+  function resize(){const r=cv.getBoundingClientRect();W=cv.width=Math.max(2,r.width*DPR);H=cv.height=Math.max(2,r.height*DPR);}
+  const parts=[];for(let i=0;i<64;i++)parts.push({x:0.32+Math.random()*0.4,y:Math.random(),s:Math.random(),seed:Math.random()*7,r:0.35+Math.random()*0.9});
+
+  function setBeat(p){const b=Math.max(0,Math.min(N-1,Math.floor(p*N)));if(b!==lastBeat){lastBeat=b;steps.forEach((s,i)=>s.classList.toggle('active',i===b));dots.forEach((d,i)=>d.classList.toggle('on',i===b));}}
 
   ScrollTrigger.create({
     trigger:'.ritual',start:'top top',end:()=>'+='+(innerHeight*N),
     pin:'#ritualStage',scrub:.5,anticipatePin:1,invalidateOnRefresh:true,
-    onUpdate:self=>{target.progress=self.progress;setBeat(self.progress);}
+    onUpdate:s=>{target.progress=s.progress;setBeat(s.progress);}
   });
 
-  function applyFrame(){
-    cur+=(target.progress-cur)*.09;
+  function frame(){
+    t+=0.016;
+    cur+=(target.progress-cur)*.08;
     const mn=window.__mn?window.__mn():[0,0];
+    // parallax de profundidad
+    bg.style.transform='scale(1.1) translate('+(-mn[0]*10).toFixed(1)+'px,'+(-mn[1]*8).toFixed(1)+'px)';
+    wrap.style.transform='translate('+(-mn[0]*22).toFixed(1)+'px,'+(-mn[1]*15).toFixed(1)+'px)';
     photos.forEach((ph,i)=>{
       const center=i*seg;
       const near=Math.max(0,Math.min(1,1-Math.abs(cur-center)/(seg*0.92)));
-      const op=near*near*(3-2*near); // smoothstep
-      const zoom=1.09-near*0.06+(cur-center)*0.045;
+      const op=near*near*(3-2*near);
+      const zoom=1.12-near*0.09+(cur-center)*0.05+Math.sin(t*0.12+i)*0.004;
       ph.style.opacity=op.toFixed(3);
-      ph.style.transform='scale('+zoom.toFixed(3)+') translate('+(mn[0]*10).toFixed(1)+'px,'+(mn[1]*8).toFixed(1)+'px)';
+      ph.style.transform='scale('+zoom.toFixed(3)+')';
       ph.style.zIndex=Math.round(near*10);
     });
+    // vapor atmosférico
+    if(W>2){
+      ctx.clearRect(0,0,W,H);
+      for(const p of parts){
+        p.y-=0.0010+p.s*0.0016; if(p.y<-0.12){p.y=1.1;p.x=0.30+Math.random()*0.42;p.r=0.35+Math.random()*0.9;}
+        const px=(p.x+Math.sin(t*0.5+p.seed)*0.028+mn[0]*0.05*(1-p.y))*W;
+        const py=p.y*H;
+        const rad=(28+p.r*78)*DPR;
+        const a=Math.sin(Math.max(0,Math.min(1,1-p.y))*Math.PI)*0.11*p.r;
+        if(a<=0.002)continue;
+        const g=ctx.createRadialGradient(px,py,0,px,py,rad);
+        g.addColorStop(0,'rgba(255,240,220,'+a.toFixed(3)+')');g.addColorStop(1,'rgba(255,240,220,0)');
+        ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,rad,0,6.2832);ctx.fill();
+      }
+    }
   }
+
   let visible=false,raf;
-  function loop(){applyFrame();if(visible&&!document.hidden)raf=requestAnimationFrame(loop);}
+  function loop(){frame();if(visible&&!document.hidden)raf=requestAnimationFrame(loop);}
   new IntersectionObserver(([e])=>{visible=e.isIntersecting;if(visible&&!document.hidden){cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}else cancelAnimationFrame(raf);}).observe(document.getElementById('ritualStage'));
   document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAnimationFrame(raf);else if(visible)raf=requestAnimationFrame(loop);});
-  applyFrame();
-  window.__C={setP:function(p){target.progress=p;cur=p;},updateFrame:applyFrame};
+  resize();addEventListener('resize',resize);frame();
+  window.__C={setP:function(p){target.progress=p;cur=p;},updateFrame:frame};
 
-  function refresh(){ScrollTrigger.refresh();applyFrame();}
+  function refresh(){resize();ScrollTrigger.refresh();frame();}
   if(document.readyState==='complete'){setTimeout(refresh,300);}else{addEventListener('load',function(){setTimeout(refresh,300);});}
   if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(refresh,150);});}
   setTimeout(refresh,1400);
