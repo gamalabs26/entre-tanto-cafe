@@ -635,7 +635,7 @@ function initCup(){
   const handle=new THREE.Mesh(new THREE.TorusGeometry(.30,.082,20,40,Math.PI*1.3),ceramic);
   handle.position.set(.85,.70,0);handle.rotation.z=-0.32;cup.add(handle);
   // Superficie de café — acabado líquido brillante (color se transforma)
-  const coffeeMat=new THREE.MeshStandardMaterial({color:0x241009,roughness:.28,metalness:0,emissive:0x0a0402,envMapIntensity:0.7});
+  const coffeeMat=new THREE.MeshStandardMaterial({color:0x0a0705,roughness:.55,metalness:0,emissive:0x1c0d05,envMapIntensity:.12});
   const coffee=new THREE.Mesh(new THREE.CircleGeometry(.735,64),coffeeMat);
   coffee.rotation.x=-Math.PI/2;coffee.position.y=1.185;cup.add(coffee);
   // Platito
@@ -672,7 +672,7 @@ function initCup(){
 
   // Estado
   const target={progress:0};let cur=0,lastP=0,vel=0,t=0;
-  const C0=new THREE.Color(0x241009),C1=new THREE.Color(0xc9a06a),C2=new THREE.Color(0x7fae5a);
+  const C0=new THREE.Color(0x1c0d05),C1=new THREE.Color(0xcaa46e),C2=new THREE.Color(0x86bd4e);
   const tmp=new THREE.Color();
   function drinkColor(p){if(p<.5){tmp.copy(C0).lerp(C1,p/.5);}else{tmp.copy(C1).lerp(C2,(p-.5)/.5);}return tmp;}
 
@@ -699,15 +699,18 @@ function initCup(){
     vel+=((Math.abs(cur-lastP)*40)-vel)*.1;lastP=cur;
     const mn = window.__mn?window.__mn():[0,0];
 
-    // cámara orbita/dollea con el progreso + parallax de cursor
-    const th=-0.4+cur*0.85, rad=3.25-cur*0.4, hy=2.15-cur*0.3;
-    camera.position.set(CX+Math.sin(th)*rad + mn[0]*0.22, hy - mn[1]*0.18, Math.cos(th)*rad);
-    camera.lookAt(CX,0.98,0);
+    // cámara casi FIJA mirando dentro de la taza (para que se luzca el cambio de bebida)
+    const th=-0.32, rad=3.15-cur*0.12, hy=2.02;
+    camera.position.set(CX+Math.sin(th)*rad + mn[0]*0.18, hy - mn[1]*0.14, Math.cos(th)*rad);
+    camera.lookAt(CX,0.96,0);
 
-    cup.rotation.y=0.25+cur*0.7+t*0.05;
-    const bob=Math.sin(t*0.7)*0.025; cup.position.y=bob; steam.position.y=bob;
-    // color de la bebida
-    coffeeMat.color.copy(drinkColor(cur));coffeeMat.emissive.copy(drinkColor(cur)).multiplyScalar(.24);
+    // la taza solo se inclina un poco a lo largo del scroll + micro-movimiento vivo
+    cup.rotation.y=0.16+cur*0.26+Math.sin(t*0.3)*0.03;
+    cup.rotation.z=Math.sin(t*0.5)*0.02;
+    cup.rotation.x=0.02+cur*0.06;
+    const bob=Math.sin(t*0.7)*0.02; cup.position.y=bob; steam.position.y=bob;
+    // color de la bebida (por emisión → negro se ve negro, matcha se ve verde)
+    coffeeMat.emissive.copy(drinkColor(cur)).multiplyScalar(.92);
 
     // bokeh flotando
     bokeh.children.forEach(sp=>{sp.material.opacity=(.12+Math.sin(t*sp.userData.sp+sp.userData.ph)*.06);});
