@@ -36,6 +36,21 @@ html = html.replace(/<link href="https:\/\/fonts\.googleapis\.com\/css2[^>]*>/, 
 // og:image relativo no sirve offline: quitarlo para evitar peticiones
 html = html.replace(/<meta property="og:image"[^>]*>/, "");
 
+// Escapa </script> para que el JS incrustado no cierre el bloque antes de tiempo
+const safe = (js) => js.replace(/<\/script>/gi, "<\\/script>");
+
+// 3) Incrustar librerías CDN (three, gsap, ScrollTrigger) — split/join no interpreta $
+const libUrls = [...html.matchAll(/<script src="(https:\/\/[^"]+)"><\/script>/g)].map(m => m[1]);
+for (const u of libUrls) {
+  console.log(`Incrustando lib ${u.split("/").pop()}...`);
+  const js = await (await fetch(u, { headers: { "User-Agent": UA } })).text();
+  html = html.split(`<script src="${u}"></script>`).join(`<script>${safe(js)}</script>`);
+}
+
+// 4) Incrustar app.js local
+const appJs = readFileSync(join(dir, "app.js"), "utf8");
+html = html.split(`<script src="app.js"></script>`).join(`<script>${safe(appJs)}</script>`);
+
 writeFileSync(join(dir, "entre-tanto-cafe.html"), html);
 const kb = Math.round(Buffer.byteLength(html) / 1024);
 console.log(`✅ entre-tanto-cafe.html (${kb} KB) — autocontenido, se abre sin servidor`);

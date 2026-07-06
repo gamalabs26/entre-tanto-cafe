@@ -32,6 +32,20 @@ body{font-family:var(--gs-font-body);background:var(--gs-espresso);color:var(--g
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
 section{position:relative}
+::selection{background:var(--gs-amber);color:#2a1a10}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:#180f09}
+::-webkit-scrollbar-thumb{background:#4a3627;border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--gs-brick)}
+:focus-visible{outline:2px solid var(--gs-amber);outline-offset:3px;border-radius:6px}
+/* Quote breather — respiro cinematográfico */
+.quote-breather{height:74vh;min-height:440px;display:grid;place-items:center;overflow:hidden;text-align:center}
+.qb-bg{position:absolute;inset:-8%;z-index:-2;background-size:cover;background-position:center;animation:kb 26s var(--ease) infinite alternate}
+.quote-breather::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(rgba(24,16,11,.62),rgba(24,16,11,.78))}
+.qb-inner{max-width:920px;padding:0 1.5rem}
+.qb-text{font-family:var(--gs-font-display);font-style:italic;font-size:clamp(2rem,6vw,4.7rem);line-height:1.06;color:var(--gs-cream)}
+.qb-text .paren{color:var(--gs-amber);font-style:normal}
+.qb-sub{display:inline-block;margin-top:1.5rem;font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;opacity:.6;color:var(--gs-cream)}
 .kicker{font-size:.74rem;letter-spacing:.32em;text-transform:uppercase;font-weight:600;color:var(--gs-amber);display:inline-block}
 h1,h2,h3{font-family:var(--gs-font-display);font-weight:400;line-height:1.02;letter-spacing:-.01em}
 h2{font-size:clamp(2.1rem,5.2vw,4rem)}
@@ -109,7 +123,7 @@ h2{font-size:clamp(2.1rem,5.2vw,4rem)}
 /* ===== RITUAL 3D ===== */
 .ritual{background:var(--gs-espresso)}
 .ritual-stage{position:relative;height:100svh;overflow:hidden;display:flex;align-items:center}
-.ritual-bg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;filter:blur(26px) brightness(.4) saturate(1.1);transform:scale(1.15)}
+.ritual-bg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;filter:blur(26px) brightness(.32) saturate(1.1);transform:scale(1.15)}
 .ritual-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(80% 80% at 35% 50%,transparent,rgba(20,12,8,.7))}
 .ritual-canvas{position:absolute;inset:0;z-index:1;width:100%;height:100%}
 .ritual-content{position:relative;z-index:2;width:100%;max-width:var(--maxw);margin:0 auto;padding:0 clamp(1.1rem,4vw,2.6rem);display:grid;grid-template-columns:1fr 1fr;pointer-events:none}
@@ -334,6 +348,15 @@ footer .fnav a{opacity:.75}footer .fnav a:hover{color:var(--gs-amber)}
       <figure data-reveal class="d1"><img loading="lazy" data-gs-img src="img/foto-05.webp" alt="Mesa de brunch con chilaquiles y café"><figcaption>La mesa completa</figcaption></figure>
       <figure data-reveal class="d2"><img loading="lazy" data-gs-img src="img/foto-03.webp" alt="Enchiladas verdes"><figcaption>Enchiladas verdes</figcaption></figure>
     </div>
+  </div>
+</section>
+
+<!-- QUOTE BREATHER -->
+<section class="quote-breather">
+  <div class="qb-bg" style="background-image:url('img/foto-02.webp')"></div>
+  <div class="qb-inner" data-reveal>
+    <p class="qb-text"><span class="paren">“</span>El momento entre las cosas.<span class="paren">”</span></p>
+    <span class="qb-sub">Una pausa en tu día · Juriquilla</span>
   </div>
 </section>
 

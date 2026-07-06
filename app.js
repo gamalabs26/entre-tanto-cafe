@@ -89,36 +89,64 @@ function initCup(){
   const canvas=document.getElementById('cupScene');
   const stage=document.getElementById('ritualStage');
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
+  renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.14;
   const scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(0x180f09,0.018);
   const camera=new THREE.PerspectiveCamera(38,1,.1,100);
   const CX=-0.75; // desplazar taza a la izquierda (texto va a la derecha)
+
+  // Environment map: gradiente cálido procedural → reflejos realistas en cerámica y café
+  const pmrem=new THREE.PMREMGenerator(renderer);pmrem.compileEquirectangularShader();
+  (function(){
+    const cv=document.createElement('canvas');cv.width=512;cv.height=256;const x=cv.getContext('2d');
+    const g=x.createLinearGradient(0,0,0,256);
+    g.addColorStop(0,'#4a3826');g.addColorStop(.35,'#2a1c12');g.addColorStop(.6,'#17100a');g.addColorStop(1,'#080604');
+    x.fillStyle=g;x.fillRect(0,0,512,256);
+    const rg=x.createRadialGradient(360,66,0,360,66,130);rg.addColorStop(0,'rgba(255,214,156,.95)');rg.addColorStop(1,'rgba(255,214,156,0)');
+    x.fillStyle=rg;x.fillRect(0,0,512,256);
+    const rg2=x.createRadialGradient(120,92,0,120,92,95);rg2.addColorStop(0,'rgba(255,176,104,.5)');rg2.addColorStop(1,'rgba(255,176,104,0)');
+    x.fillStyle=rg2;x.fillRect(0,0,512,256);
+    const tex=new THREE.CanvasTexture(cv);tex.mapping=THREE.EquirectangularReflectionMapping;
+    scene.environment=pmrem.fromEquirectangular(tex).texture;tex.dispose();
+  })();
 
   function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 
   // Grupo de la taza
   const cup=new THREE.Group();cup.position.x=CX;scene.add(cup);
 
-  // Cuerpo (Lathe) — cerámica oscura tipo stoneware
-  const prof=[[0,0],[.55,0],[.62,.05],[.86,1.25],[.86,1.30],[.80,1.30],[.74,1.20],[.60,.15],[0,.15]].map(p=>new THREE.Vector2(p[0],p[1]));
-  const body=new THREE.Mesh(new THREE.LatheGeometry(prof,64),new THREE.MeshStandardMaterial({color:0x2c2b30,roughness:.66,metalness:.05}));
-  cup.add(body);
+  // Cerámica oscura tipo stoneware (refleja el env)
+  const ceramic=new THREE.MeshStandardMaterial({color:0x4a3d33,roughness:.4,metalness:0,envMapIntensity:1.35,side:THREE.DoubleSide});
+  const prof=[[0,0],[.55,0],[.62,.05],[.86,1.25],[.865,1.31],[.80,1.31],[.745,1.20],[.60,.15],[0,.15]].map(p=>new THREE.Vector2(p[0],p[1]));
+  const body=new THREE.Mesh(new THREE.LatheGeometry(prof,96),ceramic);cup.add(body);
   // Asa
-  const handle=new THREE.Mesh(new THREE.TorusGeometry(.30,.075,14,28,Math.PI*1.25),new THREE.MeshStandardMaterial({color:0x2c2b30,roughness:.66,metalness:.05}));
-  handle.position.set(.86,.72,0);handle.rotation.z=-0.35;cup.add(handle);
-  // Superficie de café (color se transforma)
-  const coffeeMat=new THREE.MeshStandardMaterial({color:0x241009,roughness:.22,metalness:0,emissive:0x0a0402});
-  const coffee=new THREE.Mesh(new THREE.CircleGeometry(.72,48),coffeeMat);
-  coffee.rotation.x=-Math.PI/2;coffee.position.y=1.19;cup.add(coffee);
+  const handle=new THREE.Mesh(new THREE.TorusGeometry(.30,.082,20,40,Math.PI*1.3),ceramic);
+  handle.position.set(.85,.70,0);handle.rotation.z=-0.32;cup.add(handle);
+  // Superficie de café — acabado líquido brillante (color se transforma)
+  const coffeeMat=new THREE.MeshStandardMaterial({color:0x241009,roughness:.28,metalness:0,emissive:0x0a0402,envMapIntensity:0.7});
+  const coffee=new THREE.Mesh(new THREE.CircleGeometry(.735,64),coffeeMat);
+  coffee.rotation.x=-Math.PI/2;coffee.position.y=1.185;cup.add(coffee);
   // Platito
-  const saucer=new THREE.Mesh(new THREE.CylinderGeometry(1.15,1.05,.06,60),new THREE.MeshStandardMaterial({color:0x27262b,roughness:.7,metalness:.05}));
-  saucer.position.y=-0.04;cup.add(saucer);
+  const saucer=new THREE.Mesh(new THREE.CylinderGeometry(1.18,1.06,.055,72),new THREE.MeshStandardMaterial({color:0x2c2926,roughness:.5,metalness:0,envMapIntensity:.7}));
+  saucer.position.y=-0.03;cup.add(saucer);
+  // Sombra de contacto
+  const shTex=(function(){const cv=document.createElement('canvas');cv.width=cv.height=128;const x=cv.getContext('2d');const g=x.createRadialGradient(64,64,4,64,64,64);g.addColorStop(0,'rgba(0,0,0,.6)');g.addColorStop(.65,'rgba(0,0,0,.2)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,128,128);const t=new THREE.Texture(cv);t.needsUpdate=true;return t;})();
+  const shadow=new THREE.Mesh(new THREE.PlaneGeometry(3.6,3.6),new THREE.MeshBasicMaterial({map:shTex,transparent:true,depthWrite:false,opacity:.85,fog:false}));
+  shadow.rotation.x=-Math.PI/2;shadow.position.y=-0.062;cup.add(shadow);
 
-  // Luces (frontales para cerámica oscura)
-  scene.add(new THREE.HemisphereLight(0xffd9a8,0x160d08,.55));
-  scene.add(new THREE.AmbientLight(0x2a1c12,.5));
-  const key=new THREE.DirectionalLight(0xffe0b0,1.15);key.position.set(2.4,3.4,3.2);scene.add(key);
-  const rim=new THREE.DirectionalLight(0xffb066,.55);rim.position.set(-3,1.4,-2);scene.add(rim);
+  // Luces (frontales para cerámica oscura, calibradas para ACES + env)
+  scene.add(new THREE.HemisphereLight(0xffe0b8,0x140c07,.35));
+  scene.add(new THREE.AmbientLight(0x201308,.25));
+  const key=new THREE.DirectionalLight(0xffe2b4,2.0);key.position.set(2.6,3.6,3.0);scene.add(key);
+  const fill=new THREE.DirectionalLight(0xffcf9a,.6);fill.position.set(-2.5,1.2,2.6);scene.add(fill);
+  const rim=new THREE.DirectionalLight(0xffb264,1.6);rim.position.set(-2.8,2.4,-3);scene.add(rim);
+  const rim2=new THREE.DirectionalLight(0xff9d54,1.1);rim2.position.set(2.6,1.6,-2.6);scene.add(rim2);
+  // Halo cálido detrás de la taza para que la cerámica resalte del fondo oscuro
+  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:softTex('rgba(255,190,120,.95)'),transparent:true,blending:THREE.AdditiveBlending,opacity:.5,depthWrite:false,fog:false}));
+  halo.position.set(CX,0.7,-1.2);halo.scale.set(3.0,3.0,1);halo.material.opacity=.45;scene.add(halo);
 
   // Bokeh cálido de fondo
   const bokehTex=softTex('rgba(255,205,150,.9)');
@@ -130,7 +158,7 @@ function initCup(){
   const steamTex=softTex('rgba(255,255,255,.9)');
   const steam=new THREE.Group();steam.position.x=CX;scene.add(steam);
   const puffs=[];
-  for(let i=0;i<34;i++){const m=new THREE.Sprite(new THREE.SpriteMaterial({map:steamTex,transparent:true,blending:THREE.AdditiveBlending,opacity:0,depthWrite:false}));
+  for(let i=0;i<30;i++){const m=new THREE.Sprite(new THREE.SpriteMaterial({map:steamTex,transparent:true,blending:THREE.AdditiveBlending,opacity:0,depthWrite:false}));
     steam.add(m);const p={m,seed:Math.random()*7,x:(Math.random()-.5)*.7,life:Math.random()};puffs.push(p);m.scale.set(.5,.5,1);}
 
   // Estado
@@ -156,20 +184,21 @@ function initCup(){
   new IntersectionObserver(([e])=>{visible=e.isIntersecting;if(visible&&!document.hidden){raf=requestAnimationFrame(render);}else cancelAnimationFrame(raf);}).observe(stage);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAnimationFrame(raf);else if(visible)raf=requestAnimationFrame(render);});
 
-  function render(){
+  function updateFrame(){
     t+=0.016;
     cur+=(target.progress-cur)*.08;
     vel+=((Math.abs(cur-lastP)*40)-vel)*.1;lastP=cur;
     const mn = window.__mn?window.__mn():[0,0];
 
     // cámara orbita/dollea con el progreso + parallax de cursor
-    const th=-0.5+cur*1.0, rad=4.5-cur*0.9, hy=1.7-cur*0.6;
-    camera.position.set(CX+Math.sin(th)*rad + mn[0]*0.25, hy - mn[1]*0.2, Math.cos(th)*rad);
-    camera.lookAt(CX,0.85,0);
+    const th=-0.4+cur*0.85, rad=3.25-cur*0.4, hy=2.15-cur*0.3;
+    camera.position.set(CX+Math.sin(th)*rad + mn[0]*0.22, hy - mn[1]*0.18, Math.cos(th)*rad);
+    camera.lookAt(CX,0.98,0);
 
     cup.rotation.y=0.25+cur*0.7+t*0.05;
+    const bob=Math.sin(t*0.7)*0.025; cup.position.y=bob; steam.position.y=bob;
     // color de la bebida
-    coffeeMat.color.copy(drinkColor(cur));coffeeMat.emissive.copy(drinkColor(cur)).multiplyScalar(.12);
+    coffeeMat.color.copy(drinkColor(cur));coffeeMat.emissive.copy(drinkColor(cur)).multiplyScalar(.24);
 
     // bokeh flotando
     bokeh.children.forEach(sp=>{sp.material.opacity=(.12+Math.sin(t*sp.userData.sp+sp.userData.ph)*.06);});
@@ -178,18 +207,19 @@ function initCup(){
     const intensity=0.35+Math.min(vel,1.4);
     puffs.forEach(p=>{
       p.life+=0.0045+intensity*0.004;if(p.life>1)p.life-=1;
-      const y=1.2+p.life*1.9;
-      const sway=Math.sin(t*1.2+p.seed+p.life*4)*(0.18+p.life*0.15);
-      p.m.position.set(p.x+sway+mn[0]*0.5*p.life, y, (Math.sin(p.seed)*.2));
-      const sc=.35+p.life*1.2;p.m.scale.set(sc,sc,1);
-      p.m.material.opacity=Math.sin(p.life*Math.PI)*0.5*intensity;
+      const y=1.24+p.life*1.7;
+      const sway=Math.sin(t*1.2+p.seed+p.life*4)*(0.12+p.life*0.2);
+      p.m.position.set(p.x*0.6+sway+mn[0]*0.5*p.life, y, (Math.sin(p.seed)*.18));
+      const sc=.18+p.life*0.7;p.m.scale.set(sc,sc,1);
+      p.m.material.opacity=Math.sin(p.life*Math.PI)*0.32*intensity;
     });
 
     renderer.render(scene,camera);
-    if(visible&&!document.hidden)raf=requestAnimationFrame(render);
   }
+  function render(){ updateFrame(); if(visible&&!document.hidden)raf=requestAnimationFrame(render); }
+  window.__C={updateFrame,setP:p=>{cur=p;target.progress=p;}};
   // refresh de ScrollTrigger DESPUÉS de que el layout se asiente (fuentes/imágenes)
-  function refresh(){resize();ScrollTrigger.refresh();renderer.render(scene,camera);}
+  function refresh(){resize();ScrollTrigger.refresh();updateFrame();}
   if(document.readyState==='complete'){setTimeout(refresh,300);}else{addEventListener('load',()=>setTimeout(refresh,300));}
   if(document.fonts&&document.fonts.ready){document.fonts.ready.then(()=>setTimeout(refresh,150));}
   setTimeout(refresh,1400); // respaldo
